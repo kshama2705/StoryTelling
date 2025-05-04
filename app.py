@@ -80,7 +80,7 @@ Use this format:
 def narrate_story(text):
     try:
         audio_stream = tts.text_to_speech.convert(
-            voice_id="Rachel",
+            voice_id="21m00Tcm4TlvDq8ikWAM",
             model_id="eleven_multilingual_v2",
             text=text,
             output_format="mp3_44100_128"
