@@ -10,7 +10,7 @@ eleven_key = os.getenv("ELEVEN_API_KEY")
 
 # Initialize clients
 llama = OpenAI(api_key=openai_key, base_url="https://api.llama.com/compat/v1/")
-tts_client = ElevenLabs(api_key=eleven_key)  # :contentReference[oaicite:0]{index=0}
+tts = ElevenLabs(api_key=eleven_key)  # :contentReference[oaicite:0]{index=0}
 
 # ─── HTML Template ───────────────────────────────────────────────────────────────
 HTML = """
@@ -77,18 +77,23 @@ Use this format:
     return resp.choices[0].message.content
 
 # ─── Text‑to‑Speech ───────────────────────────────────────────────────────────────
-def narrate_story(text, voice_id="Rachel"):
-    # Convert to speech (returns raw MP3 bytes) :contentReference[oaicite:1]{index=1}
-    audio_bytes = tts_client.text_to_speech.convert(
-        text=text,
-        voice_id=voice_id,
-        model_id="eleven_multilingual_v2",
-        output_format="mp3_44100_128",
-    )
-    path = "/tmp/story_audio.mp3"
-    with open(path, "wb") as f:
-        f.write(audio_bytes)
-    return path
+def narrate_story(text):
+    try:
+        audio_stream = tts.text_to_speech.convert(
+            voice_id="Rachel",
+            model_id="eleven_multilingual_v2",
+            text=text,
+            output_format="mp3_44100_128"
+        )
+        path = "/tmp/story_audio.mp3"
+        with open(path, "wb") as f:
+            for chunk in audio_stream:
+                f.write(chunk)
+        return path
+    except Exception as e:
+        print(f"Error in narrate_story: {e}")
+        return None
+
 
 # ─── Flask App ───────────────────────────────────────────────────────────────────
 app = Flask(__name__)
