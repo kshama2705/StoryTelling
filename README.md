@@ -17,18 +17,7 @@ An engaging, kid‑friendly Flask web app that uses LLaMA 4 and ElevenLabs TTS 
 
 ## 📂 Project Structure
 
-StoryTelling/
-├── app.py               # Flask routes & session handling
-├── llama_logic.py       # Core story, translation, and TTS functions
-├── requirements.txt     # Python dependencies
-├── static/
-│   ├── css/
-│   │   └── style.css    # Main stylesheet
-│   └── images/          # Corner graphics (dragon.png, fox.png, owl.png, robot.png, unicorn.png)
-└── templates/
-    ├── picker.html      # Character/setting/mood/language picker
-    ├── choice.html      # Story continuation & choices
-    └── end.html         # Story ending screen
+StoryTelling/ ├── app.py # Flask routes & session handling ├── llama_logic.py # Core story, translation, and TTS functions ├── requirements.txt # Python dependencies ├── static/ │ ├── css/ │ │ └── style.css # Main stylesheet │ └── images/ # Corner graphics (dragon.png, fox.png, owl.png, robot.png, unicorn.png) └── templates/ ├── picker.html # Character/setting/mood/language picker ├── choice.html # Story continuation & choices └── end.html # Story ending screen
 
 
 ## 🔧 Prerequisites
