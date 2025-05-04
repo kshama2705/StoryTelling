@@ -99,7 +99,10 @@ def index():
                                option_b=option_b)
 
     # ── 2) GET requests: reset session & show picker ───────────────
-    session.pop("sid", None)
+    old_sid = session.pop("sid", None)
+    if old_sid:
+        story_sessions.pop(old_sid, None)
+
     return render_template(
         "picker.html",
         CHARACTER_OPTIONS=CHARACTER_OPTIONS,
@@ -107,7 +110,6 @@ def index():
         MOOD_OPTIONS=MOOD_OPTIONS,
         LANGUAGE_OPTIONS=LANGUAGE_OPTIONS
     )
-
 @app.route("/audio")
 def serve_audio():
     return send_file("/tmp/story_audio.mp3", mimetype="audio/mpeg")
