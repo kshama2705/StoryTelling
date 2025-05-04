@@ -1,17 +1,18 @@
 import os
 from flask import Flask, request, render_template_string, send_file
 from openai import OpenAI
-from elevenlabs import generate, save, set_api_key
+from elevenlabs.client import ElevenLabs
 
-# Load API keys from environment variables
+# ─── Setup ───────────────────────────────────────────────────────────────────────
+# Read API keys from the environment
 openai_key = os.getenv("OPENAI_API_KEY")
 eleven_key = os.getenv("ELEVEN_API_KEY")
 
-client = OpenAI(api_key=openai_key, base_url="https://api.llama.com/compat/v1/")
-set_api_key(eleven_key)
+# Initialize clients
+llama = OpenAI(api_key=openai_key, base_url="https://api.llama.com/compat/v1/")
+tts_client = ElevenLabs(api_key=eleven_key)  # :contentReference[oaicite:0]{index=0}
 
-app = Flask(__name__)
-
+# ─── HTML Template ───────────────────────────────────────────────────────────────
 HTML = """
 <!DOCTYPE html>
 <html>
@@ -20,9 +21,9 @@ HTML = """
   <h1>Select a Character and Scene</h1>
   <form method="POST">
     <label>Select a character:</label><br/>
-    <input type="radio" name="character" value="Luna the Space Fox"> Luna the Space Fox<br/>
+    <input type="radio" name="character" value="Luna the Space Fox" required> Luna the Space Fox<br/>
     <input type="radio" name="character" value="RoboMax the Friendly Robot"> RoboMax the Friendly Robot<br/>
-    <input type="radio" name="character" value="Zara the Jungle Explorer"> Zara the Jungle Explorer<br/>
+    <input type="radio" name="character" value="Zara the Jungle Explorer"> Zara the Jungle Explorer<br/><br/>
 
     <label>Select a setting:</label><br/>
     <select name="setting">
@@ -33,8 +34,8 @@ HTML = """
 
     <label>Mood:</label>
     <select name="mood">
-      <option value="funny and adventurous">Funny and Adventurous</option>
-      <option value="mysterious and exciting">Mysterious and Exciting</option>
+      <option value="funny and adventurous">Funny & Adventurous</option>
+      <option value="mysterious and exciting">Mysterious & Exciting</option>
     </select><br/><br/>
 
     <input type="submit" value="Start Story">
@@ -43,13 +44,13 @@ HTML = """
 </html>
 """
 
+# ─── Story Generation ─────────────────────────────────────────────────────────────
 def get_story(character, setting, mood):
     system_prompt = (
         "You are a fun, kind, and creative storytelling assistant for an 8-year-old child. "
         "Tell the story in short, vivid, easy-to-understand language with fun dialogue. "
         "End with a choice prompt. Do not continue the story until the child decides."
     )
-
     user_prompt = f"""
 The child has chosen:
 - Character: {character}
@@ -65,33 +66,49 @@ Use this format:
 **Which way should {character} go?**
 - A: [option A]
 - B: [option B]
-"""
-
-    response = client.chat.completions.create(
+"""    
+    resp = llama.chat.completions.create(
         model="Llama-4-Maverick-17B-128E-Instruct-FP8",
         messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
+            {"role": "user",   "content": user_prompt},
         ],
     )
+    return resp.choices[0].message.content
 
-    return response.choices[0].message.content
+# ─── Text‑to‑Speech ───────────────────────────────────────────────────────────────
+def narrate_story(text, voice_id="Rachel"):
+    # Convert to speech (returns raw MP3 bytes) :contentReference[oaicite:1]{index=1}
+    audio_bytes = tts_client.text_to_speech.convert(
+        text=text,
+        voice_id=voice_id,
+        model_id="eleven_multilingual_v2",
+        output_format="mp3_44100_128",
+    )
+    path = "/tmp/story_audio.mp3"
+    with open(path, "wb") as f:
+        f.write(audio_bytes)
+    return path
 
-def narrate_story(text, voice="Rachel"):
-    audio = generate(text=text, voice=voice, model="eleven_monolingual_v1")
-    save(audio, "/tmp/story_audio.mp3")
-    return "/tmp/story_audio.mp3"
+# ─── Flask App ───────────────────────────────────────────────────────────────────
+app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        character = request.form["character"]
+        char    = request.form["character"]
         setting = request.form["setting"]
-        mood = request.form["mood"]
+        mood    = request.form["mood"]
 
-        story = get_story(character, setting, mood)
-        audio_path = narrate_story(story)
-        return f"<h2>Your Story:</h2><p>{story.replace(chr(10), '<br/>')}</p><audio controls src='/audio'></audio><br/><a href='/'>Start Over</a>"
+        story     = get_story(char, setting, mood)
+        audio_fp  = narrate_story(story)
+
+        return (
+            "<h2>Your Story:</h2>"
+            + f"<p>{story.replace(chr(10), '<br/>')}</p>"
+            + "<audio controls src='/audio'></audio>"
+            + "<br/><a href='/'>Start Over</a>"
+        )
 
     return render_template_string(HTML)
 
