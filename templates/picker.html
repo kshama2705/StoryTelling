@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pick Your Adventure</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="{{ url_for('static', filename='images/dragon.png') }}" alt="Dragon" class="header-img">
+      <h1>Choose Your Adventure</h1>
+      <img src="{{ url_for('static', filename='images/dragon.png') }}" alt="Fox" class="header-img">
+    </div>
+
+    <form method="post">
+      <div class="form-group">
+        <label for="character">Select a character</label>
+        <select name="character" id="character">
+          {% for c in CHARACTER_OPTIONS %}
+            <option value="{{ c }}">{{ c }}</option>
+          {% endfor %}
+        </select>
+        <small>– or enter your own:</small>
+        <input type="text" name="custom_character" placeholder="e.g. Zara the Sky Pirate">
+      </div>
+
+      <div class="form-group">
+        <label for="setting">Select a setting</label>
+        <select name="setting" id="setting">
+          {% for s in SETTING_OPTIONS %}
+            <option value="{{ s }}">{{ s }}</option>
+          {% endfor %}
+        </select>
+        <small>– or enter your own:</small>
+        <input type="text" name="custom_setting" placeholder="e.g. a hidden crystal cave">
+      </div>
+
+      <div class="form-group">
+        <label for="mood">Mood</label>
+        <select name="mood" id="mood">
+          {% for m in MOOD_OPTIONS %}
+            <option value="{{ m }}">{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="language">Language</label>
+        <select name="language" id="language">
+          {% for l in LANGUAGE_OPTIONS %}
+            <option value="{{ l }}">{{ l }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" name="action" value="submit" class="button">Start Story</button>
+      <button type="submit" name="action" value="random" class="button">Random Adventure</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Story</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <div class="story-text">{{ story_text }}</div>
+
+    <!-- AUDIO PLAYER -->
+    <div class="audio-player">
+      <audio controls>
+        <source src="{{ url_for('serve_audio') }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+
+    <form action="/" method="post">
+      <button type="submit" name="choice" value="{{ option_a }}" class="button">{{ option_a }}</button>
+      <button type="submit" name="choice" value="{{ option_b }}" class="button">{{ option_b }}</button>
+      <button type="submit" name="choice" value="END" class="button end">End Story</button>
+    </form>
+  </div>
+</body>
+</html>
+
