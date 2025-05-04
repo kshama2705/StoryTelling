@@ -32,16 +32,15 @@ def index():
 
         # ── New Story (submit or random) ───────────────────────────
         if action in ("submit", "random"):
+            language  = form.get("language")
             if action == "random":
                 character = random.choice(CHARACTER_OPTIONS)
                 setting   = random.choice(SETTING_OPTIONS)
                 mood      = random.choice(MOOD_OPTIONS)
-                language  = random.choice(LANGUAGE_OPTIONS)
             else:
                 character = form.get("custom_character") or form.get("character")
                 setting   = form.get("custom_setting") or form.get("setting")
                 mood      = form.get("mood")
-                language  = form.get("language")
 
             # generate & translate
             en_story = generate_initial_story(character, setting, mood)
